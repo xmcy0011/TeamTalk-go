@@ -1,5 +1,5 @@
 #!/bin/sh
-DST_DIR=../server/src/base/protocol/
+DST_DIR=../server/src/base/improto/
 SRC_DIR=./gen
 
 if [[ ! -d "${DST_DIR}" ]];then
@@ -10,3 +10,5 @@ fi
 cp -rf ${SRC_DIR}/go/* ${DST_DIR}
 
 rm -rf ./gen
+
+## 需要手动进去 DST_DIR 更改package后面的名称为 improto
