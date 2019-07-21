@@ -20,44 +20,6 @@ var (
 	GitBranch   string
 )
 
-type Config struct {
-	HttpListenIp string
-	HttpPort     int
-	MsgListIp    string
-	MsgPort      int
-}
-
-func ReadConfig(fileName string) (error, Config) {
-	var config = Config{}
-
-	cfg, err := goconfig.LoadConfigFile(fileName)
-	if err != nil {
-		return err, config
-	}
-
-	config.HttpListenIp, err = cfg.GetValue("server", "http_list_ip")
-	if err != nil {
-		log.Fatal("config http_list_ip miss...")
-	}
-
-	config.HttpPort, err = cfg.Int("server", "http_port")
-	if err != nil {
-		log.Fatal("config http_port miss...")
-	}
-
-	config.MsgListIp, err = cfg.GetValue("server", "msg_server_listen_ip")
-	if err != nil {
-		log.Fatal("config msg_server_listen_ip miss...")
-	}
-
-	config.MsgPort, err = cfg.Int("server", "msg_server_port")
-	if err != nil {
-		log.Fatal("config msg_server_port miss...")
-	}
-
-	return nil, config
-}
-
 // 优雅退出
 func WaitExit(c chan os.Signal) {
 	for i := range c {
@@ -67,6 +29,32 @@ func WaitExit(c chan os.Signal) {
 			os.Exit(0)
 		}
 	}
+}
+
+type Config struct {
+	LoginServerIp   string
+	LoginServerPort int
+}
+
+func ReadConfig(fileName string) (Config, error) {
+	var config = Config{}
+
+	cfg, err := goconfig.LoadConfigFile(fileName)
+	if err != nil {
+		return config, err
+	}
+
+	config.LoginServerIp, err = cfg.GetValue("server", "login_server_ip")
+	if err != nil {
+		log.Fatal("config login_server_ip miss...")
+	}
+
+	config.LoginServerPort, err = cfg.Int("server", "login_server_port")
+	if err != nil {
+		log.Fatal("config login_server_port miss...")
+	}
+
+	return config, nil
 }
 
 func main() {
@@ -85,9 +73,9 @@ func main() {
 		fileName = flag.Arg(0)
 		log.Info("config_file = ", fileName)
 	} else {
-		fileName = "loginserver.conf"
+		fileName = "msgserver.conf"
 	}
-	err, cfg := ReadConfig(fileName)
+	cfg, err := ReadConfig(fileName)
 	if err != nil {
 		log.Info("read config file error:", err.Error())
 		os.Exit(-1)
@@ -95,8 +83,7 @@ func main() {
 
 	// write pid to server.pid file
 	if base.WritePid() {
-		go ListenMsgServerConn(cfg.MsgListIp, cfg.MsgPort)
-		go ListenHttpServerConn(cfg.HttpListenIp, cfg.HttpPort)
+
 
 		// 优雅退出
 		c := make(chan os.Signal)

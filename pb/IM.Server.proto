@@ -76,10 +76,16 @@ message IMUserStatusUpdate{
 	IM.BaseDefine.ClientType client_type = 3;
 }
 
+//del_by meiki 2019-07-21
+//message IMUserCntUpdate{
+//	//cmd id:	0x070b
+//	uint32 user_action = 1; 		//1-inc, 2-dec
+//	uint32 user_id = 2;
+//}
+
 message IMUserCntUpdate{
 	//cmd id:	0x070b
-	uint32 user_action = 1; 		//1-inc, 2-dec
-	uint32 user_id = 2;
+	uint32 user_count = 1; 		// current user count
 }
 
 message IMServerKickUser{

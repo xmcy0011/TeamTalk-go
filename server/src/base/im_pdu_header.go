@@ -26,6 +26,8 @@ type ImPduHeader struct {
 	pbMessage proto.Message // 消息体
 }
 
+// public
+
 func (it *ImPduHeader) SetPduMsg(message proto.Message) {
 	it.pbMessage = message
 }
@@ -33,44 +35,17 @@ func (it *ImPduHeader) SetPduMsg(message proto.Message) {
 func (it *ImPduHeader) ReadHeader(data []byte, len int) {
 	if len >= pduHeaderLen {
 		buffer := bytes.NewBuffer(data)
-		binary.Read(buffer, binary.BigEndian, &it.Length)
-		binary.Read(buffer, binary.BigEndian, &it.Version)
-		binary.Read(buffer, binary.BigEndian, &it.Flag)
-		binary.Read(buffer, binary.BigEndian, &it.ServiceId)
-		binary.Read(buffer, binary.BigEndian, &it.CommandId)
-		binary.Read(buffer, binary.BigEndian, &it.SeqNum)
-		binary.Read(buffer, binary.BigEndian, &it.Reversed)
+		_ = binary.Read(buffer, binary.BigEndian, &it.Length)
+		_ = binary.Read(buffer, binary.BigEndian, &it.Version)
+		_ = binary.Read(buffer, binary.BigEndian, &it.Flag)
+		_ = binary.Read(buffer, binary.BigEndian, &it.ServiceId)
+		_ = binary.Read(buffer, binary.BigEndian, &it.CommandId)
+		_ = binary.Read(buffer, binary.BigEndian, &it.SeqNum)
+		_ = binary.Read(buffer, binary.BigEndian, &it.Reversed)
 	}
 }
 
-func (it *ImPduHeader) getHeaderBuffer() []byte {
-	tempSlice := make([]byte, 0)
-	buffer := bytes.NewBuffer(tempSlice)
-	binary.Write(buffer, binary.BigEndian, it.Length)
-	binary.Write(buffer, binary.BigEndian, it.Version)
-	binary.Write(buffer, binary.BigEndian, it.Flag)
-	binary.Write(buffer, binary.BigEndian, it.ServiceId)
-	binary.Write(buffer, binary.BigEndian, it.CommandId)
-	binary.Write(buffer, binary.BigEndian, it.SeqNum)
-	binary.Write(buffer, binary.BigEndian, it.Reversed)
-
-	return buffer.Bytes()
-}
-
-/**
-获取递增唯一序号
- */
-func getSeq() uint16 {
-	// 原子操作
-	atomic.AddUint32(&pduSeq, 1)
-	// 溢出
-	if pduSeq > uint32(UINT16_MAX) {
-		atomic.StoreUint32(&pduSeq,1)  // 原子操作
-	}
-	return uint16(pduSeq)
-}
-
-func (it *ImPduHeader) GetBuffer() []byte {
+func (it *ImPduHeader) GetBuffer() ([]byte, error) {
 	// write header
 	tempSlice := make([]byte, 0)
 	buffer := bytes.NewBuffer(tempSlice)
@@ -78,7 +53,7 @@ func (it *ImPduHeader) GetBuffer() []byte {
 	data, err := proto.Marshal(it.pbMessage)
 	if err != nil {
 		log.Println("parse pb error:", err)
-		return nil
+		return nil, err
 	}
 
 	// 设置头信息
@@ -87,10 +62,10 @@ func (it *ImPduHeader) GetBuffer() []byte {
 
 	headerData := it.getHeaderBuffer()
 
-	binary.Write(buffer, binary.BigEndian, headerData)
-	binary.Write(buffer, binary.BigEndian, data)
+	_ = binary.Write(buffer, binary.BigEndian, headerData)
+	_ = binary.Write(buffer, binary.BigEndian, data)
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 func (it *ImPduHeader) IncreSeq() {
@@ -101,4 +76,31 @@ func (it *ImPduHeader) IncreSeq() {
 func (it *ImPduHeader) GetBodyBuffer() []byte {
 	data, _ := proto.Marshal(it.pbMessage)
 	return data
+}
+
+// private
+
+func (it *ImPduHeader) getHeaderBuffer() []byte {
+	tempSlice := make([]byte, 0)
+	buffer := bytes.NewBuffer(tempSlice)
+	_ = binary.Write(buffer, binary.BigEndian, it.Length)
+	_ = binary.Write(buffer, binary.BigEndian, it.Version)
+	_ = binary.Write(buffer, binary.BigEndian, it.Flag)
+	_ = binary.Write(buffer, binary.BigEndian, it.ServiceId)
+	_ = binary.Write(buffer, binary.BigEndian, it.CommandId)
+	_ = binary.Write(buffer, binary.BigEndian, it.SeqNum)
+	_ = binary.Write(buffer, binary.BigEndian, it.Reversed)
+
+	return buffer.Bytes()
+}
+
+// 获取递增唯一序号
+func getSeq() uint16 {
+	// 原子操作
+	atomic.AddUint32(&pduSeq, 1)
+	// 溢出
+	if pduSeq > uint32(UINT16_MAX) {
+		atomic.StoreUint32(&pduSeq, 1) // 原子操作
+	}
+	return uint16(pduSeq)
 }
