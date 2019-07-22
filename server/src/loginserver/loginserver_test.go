@@ -89,13 +89,13 @@ func TestListenHttpServerConn(t *testing.T) {
 			t.Error(err.Error())
 		}
 
-		body, err := ioutil.ReadAll(res.Body)
+		_, err = ioutil.ReadAll(res.Body)
 		if err != nil {
 			t.Error(err.Error())
 		}
 		_ = res.Body.Close()
 
-		glog.Info("http://127.0.01:8099/msg_server res:", string(body))
+		//glog.Info("http://127.0.01:8099/msg_server res:", string(body))
 
 		time.Sleep(time.Duration(6) * time.Second)
 	}

@@ -25,7 +25,6 @@ func ListenHttpServerConn(listenIp string, port int) {
 	glog.Info("start listen login_server on:", listenIp+":"+strconv.Itoa(port))
 
 	http.HandleFunc("/msg_server", func(w http.ResponseWriter, r *http.Request) {
-		glog.Info("remote http request,host:", r.Host)
 		var res ServerInfo
 		if msgServerList.Len() < 0 {
 			res = ServerInfo{
@@ -68,6 +67,7 @@ func ListenHttpServerConn(listenIp string, port int) {
 
 		buf, _ := json.Marshal(res)
 		_, e := fmt.Fprint(w, string(buf))
+		glog.Info("remote http request,host:", r.Host, ",msg_info:", string(buf))
 		if e != nil {
 			glog.Error("http response has error:", e.Error())
 		}
