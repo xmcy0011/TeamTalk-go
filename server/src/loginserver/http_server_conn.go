@@ -38,9 +38,9 @@ func ListenHttpServerConn(listenIp string, port int) {
 			glog.Error("not msgServer connect")
 		} else {
 			// 负载均衡算法：最小连接法
-			var minServer = msgServerList.Front().Value.(MsgServer)
+			var minServer = msgServerList.Front().Value.(*MsgServer)
 			for i := msgServerList.Front().Next(); i != nil; i = i.Next() {
-				cur := i.Value.(MsgServer)
+				cur := i.Value.(*MsgServer)
 				if cur.UserCount < minServer.UserCount {
 					minServer = cur
 				}

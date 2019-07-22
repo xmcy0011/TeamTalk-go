@@ -5,7 +5,9 @@ import (
 	"TeamTalk-go-flutter/server/src/base/improto"
 	"flag"
 	"github.com/golang/glog"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -72,4 +74,30 @@ func TestListenMsgServerConn(t *testing.T) {
 
 		time.Sleep(time.Duration(5) * time.Second)
 	}
+}
+
+func TestListenHttpServerConn(t *testing.T) {
+	// msg_server
+	go TestListenMsgServerConn(t)
+
+	go ListenHttpServerConn("127.0.0.1", 8099)
+
+	time.Sleep(time.Duration(5) * time.Second)
+	for i := 0; i < 3; i++ {
+		res, err := http.Get("http://127.0.0.1:8099/msg_server")
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Error(err.Error())
+		}
+		_ = res.Body.Close()
+
+		glog.Info("http://127.0.01:8099/msg_server res:", string(body))
+
+		time.Sleep(time.Duration(6) * time.Second)
+	}
+
 }
